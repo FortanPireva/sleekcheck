@@ -9,12 +9,30 @@ const LoginPage = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(false); // Error message for login failure
 
-  const handleLogin = (e) => {
+
+  const handleLogin = async (e) => {
     // Handle login logic here
     e.preventDefault();
-    if(email == 'admin@gmail.com' && password == '12345678') {
-        router.push('/dashboard'); // Redirect to dashboard page after successful login
+    const res = await fetch('/api/auth/login', {
+      body: JSON.stringify({
+        email,
+        password
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST'
+    });
+
+    const result = await res.json();
+    if (res.status === 200) {
+      // Login success
+      router.push('/dashboard');
+    } else {
+      alert('faulty login')
+      setError(result.message)
     }
   };
 
@@ -27,7 +45,7 @@ const LoginPage = () => {
           placeholder="Email"
           onChange={(e) => setEmail(e.target.value)}
           value={email}
-          className="border border-gray-300 rounded px-4 py-2"
+          className={`border border-gray-300 rounded px-4 py-2 ${error ? 'border-red-500 error' : ''}`}
           data-testid={DATA_TEST_IDS.LOGIN_INPUT_EMAIL}
         />
         <input
@@ -35,9 +53,10 @@ const LoginPage = () => {
           placeholder="Password"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           value={password}
-          className="border border-gray-300 rounded px-4 py-2"
+          className={`border border-gray-300 rounded px-4 py-2 ${error ? 'border-red-500 error' : ''}`}
           data-testid={DATA_TEST_IDS.LOGIN_INPUT_PASSWORD}
         />
+        {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
           id='login-button'
